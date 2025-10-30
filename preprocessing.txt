@@ -1,3 +1,14 @@
+# Import all required libraries
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+import matplotlib.pyplot as plt
+
+
+
 🧩 Step 1: Import Libraries
 import pandas as pd
 import numpy as np
@@ -55,3 +66,35 @@ Let’s create a new column “Salary_Level” based on salary values.
 
 df['Salary_Level'] = np.where(df['Salary'] > 0.7, 'High', 'Low')
 df['Chance of Admit '] = [1 if each>0.80 else 0 for each in df['Chance of Admit ']]
+
+
+Plotting :
+
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+sns.histplot(df['Age'], kde=True, color='green', bins=5)
+plt.title('Age Distribution (After Cleaning & Scaling)')
+
+plt.subplot(1, 2, 2)
+sns.histplot(df['Salary'], kde=True, color='orange', bins=5)
+plt.title('Salary Distribution (After Cleaning & Scaling)')
+
+plt.show()
+
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+sns.scatterplot( x=df['GRE Score'], y=df['CGPA'], hue=df['University Rating'])
+plt.title('Scatter Plot')
+
+plt.show()
+
+
+# CONFUSION MATRIX :
+ConfusionMatrixDisplay.from_predictions(y_test,y_pred_dt, cmap='Blues')
+plt.title('Decision Tree')
+plt.show()
+print(f" Accuracy is {accuracy_score(y_test,y_pred_dt)}")
+print(classification_report(y_test,y_pred_dt))
