@@ -1,0 +1,57 @@
+🧩 Step 1: Import Libraries
+import pandas as pd
+import numpy as np
+
+📂 Step 2: Create a Sample Dataset
+data = {
+    'Name': ['Alice', 'Bob', 'Charlie', np.nan, 'Eve', 'Frank'],
+    'Age': [25, np.nan, 30, 22, 29, 40],
+    'Gender': ['F', 'M', np.nan, 'F', 'F', 'M'],
+    'Salary': [50000, 54000, np.nan, 30000, 60000, 58000],
+    'City': ['New York', 'London', 'Paris', 'New York', np.nan, 'London']
+}
+
+df = pd.DataFrame(data)
+print("Original DataFrame:\n", df)
+
+
+Output:
+
+      Name   Age Gender   Salary      City
+0    Alice  25.0      F  50000.0  New York
+1      Bob   NaN      M  54000.0    London
+2  Charlie  30.0    NaN      NaN     Paris
+3      NaN  22.0      F  30000.0  New York
+4      Eve  29.0      F  60000.0       NaN
+5    Frank  40.0      M  58000.0    London
+
+🧹 Step 3: Data Cleaning
+a) Handling Missing Values
+
+Fill numeric missing values with mean.
+
+Fill categorical missing values with mode.
+
+df['Age'].fillna(df['Age'].mean(), inplace=True)
+df['Salary'].fillna(df['Salary'].mean(), inplace=True)
+df['Gender'].fillna(df['Gender'].mode()[0], inplace=True)
+df['City'].fillna(df['City'].mode()[0], inplace=True)
+df['Name'].fillna('Unknown', inplace=True)
+
+🔍 Step 4: Data Transformation
+a) Convert Categorical Variables to Numerical (Encoding)
+df['Gender'] = df['Gender'].map({'F': 0, 'M': 1})
+
+b) Normalize or Scale Numeric Columns
+
+Here, we apply Min-Max Scaling to the numeric columns.
+
+df['Age'] = (df['Age'] - df['Age'].min()) / (df['Age'].max() - df['Age'].min())
+df['Salary'] = (df['Salary'] - df['Salary'].min()) / (df['Salary'].max() - df['Salary'].min())
+
+🧮 Step 5: Feature Engineering (Optional)
+
+Let’s create a new column “Salary_Level” based on salary values.
+
+df['Salary_Level'] = np.where(df['Salary'] > 0.7, 'High', 'Low')
+df['Chance of Admit '] = [1 if each>0.80 else 0 for each in df['Chance of Admit ']]
