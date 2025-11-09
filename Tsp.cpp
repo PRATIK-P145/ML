@@ -1,261 +1,188 @@
 #include <iostream>
-#include <queue>
 #include <climits>
-#include <algorithm>
+#include <vector>
 using namespace std;
 
-#define MAX_CITIES 20
+int arr[50][50];
+int n, visited[50], path[50], final_res = INT_MAX;
 
-struct Node {
-    int reducedMatrix[MAX_CITIES][MAX_CITIES];
+struct node {
     int cost;
-    int vertex;
-    int level;
-    int path[MAX_CITIES];
-    int pathLength;
+    int arr[50][50];
+    int visited[50];
+    int parent[50][50];
+    int last;
+    vector <int> path;
 };
 
-struct Compare {
-    bool operator()(const Node* lhs, const Node* rhs) const {
-        return lhs->cost > rhs->cost;
-    }
-};
+node stack[50];
+int top=0;
+node result;
 
-void copyMatrix(int dest[MAX_CITIES][MAX_CITIES], int src[MAX_CITIES][MAX_CITIES], int n) {
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            dest[i][j] = src[i][j];
-        }
-    }
-}
-
-void copyPath(int dest[MAX_CITIES], int& destLength, int src[MAX_CITIES], int srcLength) {
-    destLength = srcLength;
-    for (int i = 0; i < srcLength; i++) {
-        dest[i] = src[i];
-    }
-}
-
-int reduceMatrix(int matrix[MAX_CITIES][MAX_CITIES], int n) {
+int reduce(int arr[50][50]) {
+    int row_reduction[50] = {0};
+    int col_reduction[50] = {0};
     int cost = 0;
-    
-    // Reduce rows
+    // Row reduction
     for (int i = 0; i < n; i++) {
-        int minVal = INT_MAX;
+        int row_min = INT_MAX;
         for (int j = 0; j < n; j++) {
-            if (matrix[i][j] < minVal) {
-                minVal = matrix[i][j];
+            if (arr[i][j] < row_min) {
+                row_min = arr[i][j];
             }
         }
-        if (minVal != INT_MAX && minVal != 0) {
-            cost += minVal;
+        if (row_min != INT_MAX && row_min > 0) {
+            row_reduction[i] = row_min;
+            cost += row_min;
             for (int j = 0; j < n; j++) {
-                if (matrix[i][j] != INT_MAX) {
-                    matrix[i][j] -= minVal;
+                if (arr[i][j] != INT_MAX) {
+                    arr[i][j] -= row_min;
                 }
             }
         }
     }
-    
-    // Reduce columns
+
+    // Column reduction
     for (int j = 0; j < n; j++) {
-        int minVal = INT_MAX;
+        int col_min = INT_MAX;
         for (int i = 0; i < n; i++) {
-            if (matrix[i][j] < minVal) {
-                minVal = matrix[i][j];
+            if (arr[i][j] < col_min) {
+                col_min = arr[i][j];
             }
         }
-        if (minVal != INT_MAX && minVal != 0) {
-            cost += minVal;
+        if (col_min != INT_MAX && col_min > 0) {
+            col_reduction[j] = col_min;
+            cost += col_min;
             for (int i = 0; i < n; i++) {
-                if (matrix[i][j] != INT_MAX) {
-                    matrix[i][j] -= minVal;
+                if (arr[i][j] != INT_MAX) {
+                    arr[i][j] -= col_min;
                 }
             }
         }
     }
-    
+
+    // Print reduced matrix
+    cout << "Reduced Matrix:" << endl;
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (arr[i][j] == INT_MAX) {
+                cout << "INF\t";
+            } else {
+                cout << arr[i][j] << "\t";
+            }
+        }
+        cout << endl;
+    }
     return cost;
 }
 
-void solveTSP(int originalMatrix[MAX_CITIES][MAX_CITIES], int n) {
-    priority_queue<Node*, vector<Node*>, Compare> pq;
-    
-    // Create root node
-    Node* root = new Node();
-    copyMatrix(root->reducedMatrix, originalMatrix, n);
-    root->path[0] = 0;
-    root->pathLength = 1;
-    root->level = 0;
-    root->vertex = 0;
-    
-    int tempMatrix[MAX_CITIES][MAX_CITIES];
-    copyMatrix(tempMatrix, root->reducedMatrix, n);
-    root->cost = reduceMatrix(tempMatrix, n);
-    copyMatrix(root->reducedMatrix, tempMatrix, n);
-    
-    pq.push(root);
-    
-    int minCost = INT_MAX;
-    int finalPath[MAX_CITIES];
-    int finalPathLength = 0;
-    
-    while (!pq.empty()) {
-        Node* minNode = pq.top();
-        pq.pop();
-        
-        int i = minNode->vertex;
-        
-        if (minNode->level == n - 1) {
-            int returnCost = originalMatrix[i][0];
-            if (returnCost != INT_MAX) {
-                int totalCost = minNode->cost + returnCost;
-                if (totalCost < minCost) {
-                    minCost = totalCost;
-                    copyPath(finalPath, finalPathLength, minNode->path, minNode->pathLength);
-                    finalPath[finalPathLength++] = 0;
-                }
+int main() {
+    // n = 5;
+    // arr[0][0] = INT_MAX; arr[0][1] = 20; arr[0][2] = 30; arr[0][3] = 10; arr[0][4] = 11;
+    // arr[1][0] = 15; arr[1][1] = INT_MAX; arr[1][2] = 16; arr[1][3] = 4; arr[1][4] = 2;
+    // arr[2][0] = 3; arr[2][1] = 5; arr[2][2] = INT_MAX; arr[2][3] = 2; arr[2][4] = 4;
+    // arr[3][0] = 19; arr[3][1] = 6; arr[3][2] = 18; arr[3][3] = INT_MAX; arr[3][4] = 3;
+    // arr[4][0] = 16; arr[4][1] = 4; arr[4][2] = 7; arr[4][3] = 16; arr[4][4] = INT_MAX;
+    n = 4;
+    arr[0][0] = INT_MAX; arr[0][1] = 10; arr[0][2] = 15; arr[0][3] = 20;
+    arr[1][0] = 10; arr[1][1] = INT_MAX; arr[1][2] = 35; arr[1][3] = 25;
+    arr[2][0] = 15; arr[2][1] = 35; arr[2][2] = INT_MAX; arr[2][3] = 30;
+    arr[3][0] = 20; arr[3][1] = 25; arr[3][2] = 30; arr[3][3] = INT_MAX;
+    int original[50][50];
+    for (int i=0; i<n; i++) {
+        for (int j=0; j<n; j++) {
+            original[i][j] = arr[i][j];
+        }
+    }
+    int initial = reduce(arr);
+    for (int i=0; i<n; i++) {
+        visited[i] = 0;
+    }
+    visited[0] = 1;
+    cout << "Initial reduction cost: " << initial << endl;
+    node temp;
+    temp.cost = initial;
+    for (int i=0; i<n; i++) {
+        for (int j=0; j<n; j++) {
+            temp.arr[i][j] = arr[i][j];
+            temp.parent[i][j] = arr[i][j];
+        }
+        temp.visited[i] = visited[i];
+        //temp.arr[0][i] = INT_MAX;
+    }
+    temp.path.push_back(0);
+    temp.last = 0;
+    stack[top] = temp;
+    top ++;
+    while (top > 0) {
+        int idx = 0;
+        int min_cost = INT_MAX;
+        for (int i=0; i<top; i++) {
+            if (stack[i].cost < min_cost) {
+                min_cost = stack[i].cost;
+                idx = i;
             }
-            delete minNode;
+        }
+        node curr = stack[idx];
+        for (int i=idx; i<top-1; i++) {
+            stack[i] = stack[i+1];
+        }
+        top--;
+        if (curr.cost >= final_res) {
             continue;
         }
-        
-        for (int j = 0; j < n; j++) {
-            if (minNode->reducedMatrix[i][j] != INT_MAX && minNode->reducedMatrix[i][j] != 0) {
-                Node* child = new Node();
-                copyMatrix(child->reducedMatrix, minNode->reducedMatrix, n);
-                
-                for (int k = 0; k < n; k++) {
-                    child->reducedMatrix[i][k] = INT_MAX;
-                    child->reducedMatrix[k][j] = INT_MAX;
+        for (int i=0; i<n; i++) {
+            if (curr.visited[i]) {
+                continue;
+            }
+            node child;
+            for (int r=0; r<n; r++) {
+                for (int c=0; c<n; c++) {
+                    child.arr[r][c] = curr.arr[r][c];
+                    child.parent[r][c] = curr.arr[r][c];
                 }
-                child->reducedMatrix[j][0] = INT_MAX;
-                
-                copyPath(child->path, child->pathLength, minNode->path, minNode->pathLength);
-                child->path[child->pathLength++] = j;
-                
-                child->level = minNode->level + 1;
-                child->vertex = j;
-                
-                int tempChildMatrix[MAX_CITIES][MAX_CITIES];
-                copyMatrix(tempChildMatrix, child->reducedMatrix, n);
-                int reductionCost = reduceMatrix(tempChildMatrix, n);
-                child->cost = minNode->cost + minNode->reducedMatrix[i][j] + reductionCost;
-                copyMatrix(child->reducedMatrix, tempChildMatrix, n);
-                
-                if (child->cost < minCost) {
-                    pq.push(child);
+                child.visited[r] = curr.visited[r];
+            }
+            child.visited[i] = 1;
+            for (int k=0; k<n; k++) {
+                child.arr[curr.last][k] = INT_MAX;
+            }
+            for (int k=0; k<n; k++) {
+                child.arr[k][i] = INT_MAX;
+            }
+            child.arr[i][0] = INT_MAX;
+            int cost_added = curr.cost + child.parent[curr.last][i];
+            int reduction_cost = reduce(child.arr);
+            printf("Cost added: %d, Reduction cost: %d, Curr Cost: %d\n", cost_added, reduction_cost, curr.cost);
+            child.cost = cost_added + reduction_cost;
+            child.last = i;
+            child.path = curr.path;
+            child.path.push_back(i);
+            if (child.cost < final_res) {
+                bool all_visited = true;
+                for (int v=0; v<n; v++) {
+                    if (!child.visited[v]) {
+                        all_visited = false;
+                        break;
+                    }
+                }
+                if (all_visited) {
+                    int total_cost = child.cost + child.parent[child.last][0];
+                    if (total_cost < final_res) {
+                        final_res = total_cost;
+                        result = child;
+                        result.cost = final_res;
+                    }
                 } else {
-                    delete child;
+                    stack[top] = child;
+                    top++;
                 }
             }
         }
-        
-        delete minNode;
     }
-    
-    if (minCost != INT_MAX) {
-        cout << "\nMinimum Cost: " << minCost << endl;
-        cout << "Optimal Path: ";
-        for (int i = 0; i < finalPathLength; i++) {
-            cout << finalPath[i];
-            if (i < finalPathLength - 1) cout << " -> ";
-        }
-        cout << endl;
-    } else {
-        cout << "\nNo feasible solution found!" << endl;
+    cout << "Optimal Path: ";
+    for (int i=0; i<result.path.size(); i++) {
+        cout << result.path[i] << " ";
     }
-    
-    while (!pq.empty()) {
-        Node* node = pq.top();
-        pq.pop();
-        delete node;
-    }
-}
-
-void printMatrix(int matrix[MAX_CITIES][MAX_CITIES], int n) {
-    cout << "\nCost Matrix:" << endl;
-    cout << "    ";
-    for (int j = 0; j < n; j++) {
-        cout << "C" << j << "  ";
-    }
-    cout << endl;
-    
-    for (int i = 0; i < n; i++) {
-        cout << "C" << i << "  ";
-        for (int j = 0; j < n; j++) {
-            if (matrix[i][j] == INT_MAX) {
-                cout << "INF ";
-            } else {
-                printf("%3d ", matrix[i][j]);
-            }
-        }
-        cout << endl;
-    }
-}
-
-int main() {
-    cout << "=== Traveling Salesman Problem using LC Branch and Bound ===" << endl;
-    
-    // New 5x5 cost matrix example
-    int n = 5;
-    int costMatrix[MAX_CITIES][MAX_CITIES];
-    
-    // Initialize with INF
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            costMatrix[i][j] = INT_MAX;
-        }
-    }
-    
-    // New symmetric cost matrix (distances between 5 cities)
-    costMatrix[0][1] = 12; costMatrix[0][2] = 29; costMatrix[0][3] = 22; costMatrix[0][4] = 13;
-    costMatrix[1][0] = 12; costMatrix[1][2] = 19; costMatrix[1][3] = 25; costMatrix[1][4] = 18;
-    costMatrix[2][0] = 29; costMatrix[2][1] = 19; costMatrix[2][3] = 17; costMatrix[2][4] = 28;
-    costMatrix[3][0] = 22; costMatrix[3][1] = 25; costMatrix[3][2] = 17; costMatrix[3][4] = 16;
-    costMatrix[4][0] = 13; costMatrix[4][1] = 18; costMatrix[4][2] = 28; costMatrix[4][3] = 16;
-    
-    // Set diagonal to INF
-    for (int i = 0; i < n; i++) {
-        costMatrix[i][i] = INT_MAX;
-    }
-    
-    cout << "5x5 Cost Matrix Example:" << endl;
-    cout << "Cities: 0, 1, 2, 3, 4" << endl;
-    
-    printMatrix(costMatrix, n);
-    solveTSP(costMatrix, n);
-    
-    // Verification of the result
-    cout << "\n--- Verification ---" << endl;
-    cout << "Possible tours and their costs:" << endl;
-    
-    // List some possible tours to verify optimality
-    int possibleTours[5][6] = {
-        {0, 1, 2, 3, 4, 0},  // 12 + 19 + 17 + 16 + 13 = 77
-        {0, 1, 2, 4, 3, 0},  // 12 + 19 + 28 + 16 + 22 = 97
-        {0, 1, 3, 2, 4, 0},  // 12 + 25 + 17 + 28 + 13 = 95
-        {0, 1, 4, 3, 2, 0},  // 12 + 18 + 16 + 17 + 29 = 92
-        {0, 4, 3, 2, 1, 0}   // 13 + 16 + 17 + 19 + 12 = 77
-    };
-    
-    const char* tourNames[] = {
-        "0->1->2->3->4->0",
-        "0->1->2->4->3->0", 
-        "0->1->3->2->4->0",
-        "0->1->4->3->2->0",
-        "0->4->3->2->1->0"
-    };
-    
-    for (int i = 0; i < 5; i++) {
-        int tourCost = 0;
-        for (int j = 0; j < 5; j++) {
-            int from = possibleTours[i][j];
-            int to = possibleTours[i][j + 1];
-            tourCost += costMatrix[from][to];
-        }
-        cout << tourNames[i] << " = " << tourCost << endl;
-    }
-    
-    return 0;
+    cout << "Minimum cost of TSP: " << final_res << endl;
 }
